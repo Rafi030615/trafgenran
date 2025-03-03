@@ -1,10 +1,10 @@
-, URL
+,URL
 0, http://testhtml5.vulnweb.com
 1, http://testphp.vulnweb.com
 2, http://testasp.vulnweb.com
 3, http://testaspnet.vulnweb.com
 4, http://rest.vulnweb.com
-5, http://esthtml5.vulnweb.com
+5, http://testhtml5.vulnweb.com
 6, http://testphp.vulnweb.com
 7, http://testasp.vulnweb.com
 8, http://testaspnet.vulnweb.com
@@ -29,7 +29,7 @@
 27, http://testasp.vulnweb.com
 28, http://testaspnet.vulnweb.com
 29, http://rest.vulnweb.com
-30, http://esthtml5.vulnweb.com
+30, http://testhtml5.vulnweb.com
 31, http://testphp.vulnweb.com
 32, http://testasp.vulnweb.com
 33, http://testaspnet.vulnweb.com
@@ -41,7 +41,7 @@
 39, http://rest.vulnweb.com
 40, http://testhtml5.vulnweb.com
 41, http://testphp.vulnweb.com
-42, http://estasp.vulnweb.com
+42, http://testasp.vulnweb.com
 43, http://testaspnet.vulnweb.com
 44, http://rest.vulnweb.com
 45, http://testhtml5.vulnweb.com
