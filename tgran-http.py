@@ -96,7 +96,7 @@ def main():
     with open('request_log_http.log', mode='w') as file:
         file.write("URL\tStart Time\tEnd Time\tRTT (ms)\tStatus Code\n")
     
-    source_ip = '10.60.0.3'
+    source_ip = '10.60.0.4'
     session = requests.Session()
     session.mount('http://', SourceIPAdapter(source_ip))
     
