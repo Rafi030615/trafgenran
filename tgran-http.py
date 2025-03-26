@@ -48,13 +48,17 @@ def make_request(url, results, session):
     
     log_to_log(log_data)
 
-def generate_traffic(urls, num_requests, requests_per_second, zipf_params, session):
+def generate_traffic(urls, num_requests, requests_per_second, zipf_params, source_ips):
     probabilities = zipf_mandelbrot(len(urls), *zipf_params)
     results = []
     executor = ThreadPoolExecutor(max_workers=100)
+    sessions = [requests.Session() for _ in source_ips]
+    for session, ip in zip(sessions, source_ips):
+        session.mount('http://', SourceIPAdapter(ip))
     
-    for _ in range(num_requests):
+    for i in range(num_requests):
         url = np.random.choice(urls, p=probabilities)
+        session = np.random.choice(sessions)  # Pilih session secara acak dari IP yang tersedia
         executor.submit(make_request, url, results, session)
         time.sleep(1 / requests_per_second)
 
@@ -112,12 +116,9 @@ def main():
     requests_per_second = float(input("Jumlah request per detik (-rps): "))
     zipf_q = float(input("Zipf parameter q (-zipf q): "))
     zipf_s = float(input("Zipf parameter s (-zipf s): "))
-    source_ip = input("Masukkan Source IP (-ip): ")
+    source_ips = input("Masukkan Source IPs (pisahkan dengan koma, contoh: 192.168.1.1,192.168.1.2): ").split(',')
 
-    session = requests.Session()
-    session.mount('http://', SourceIPAdapter(source_ip))
-
-    results = generate_traffic(urls[:num_urls], num_requests, requests_per_second, (zipf_q, zipf_s), session)
+    results = generate_traffic(urls[:num_urls], num_requests, requests_per_second, (zipf_q, zipf_s), source_ips)
     
     total_data, average_data = calculate_totals_and_averages(results)
     
