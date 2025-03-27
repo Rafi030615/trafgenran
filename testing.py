@@ -1,5 +1,3 @@
-import os
-import sys
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.poolmanager import PoolManager
@@ -8,7 +6,6 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urljoin, urlparse
 import re
-import subprocess
 
 class SourceIPAdapter(HTTPAdapter):
     def __init__(self, source_address, **kwargs):
@@ -71,27 +68,7 @@ def measure_performance(url, source_ip):
     print(f"🚀 Throughput: {throughput:.2f} KB/s")
     print(f"⏱️ Latency (full fetch): {latency:.2f} ms")
 
-def run_in_namespace(namespace, script_path):
-    """Jalankan ulang script ini di dalam network namespace yang dipilih."""
-    print(f"🔄 Menjalankan ulang dalam namespace: {namespace}")
-    os.execvp("ip", ["ip", "netns", "exec", namespace, "python3", script_path])
-
 if __name__ == "__main__":
-    # Set network namespace & source IP yang sesuai
-    namespace = "ue1"
-    source_ip = "10.60.0.3"
-    
-    # Cek apakah script sudah berjalan di dalam netns yang benar
-    current_netns = subprocess.getoutput("cat /proc/self/ns/net")
-    netns_list = subprocess.getoutput("ls /var/run/netns").split("\n")
-
-    if namespace in netns_list:
-        netns_path = subprocess.getoutput(f"stat -c %i /var/run/netns/{namespace}")
-        if netns_path not in current_netns:
-            run_in_namespace(namespace, sys.argv[0])
-
-    # URL target
     url = 'http://testasp.vulnweb.com/'
-    
-    # Jalankan pengukuran performa
+    source_ip = '10.60.0.3'
     measure_performance(url, source_ip)
