@@ -1,11 +1,13 @@
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.poolmanager import PoolManager
-import socket
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin
 import re
+
+# USER-AGENT kayak browser normal, biar gak ditendang ama server
+USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
 
 class SourceIPAdapter(HTTPAdapter):
     def __init__(self, source_address, **kwargs):
@@ -16,6 +18,7 @@ class SourceIPAdapter(HTTPAdapter):
         kwargs['source_address'] = (self.source_address, 0)
         return super(SourceIPAdapter, self).init_poolmanager(*args, **kwargs)
 
+# Ambil semua link <img>, <script>, <link> biar bisa diitung total size-nya
 def extract_links(html, base_url):
     pattern = r'<img[^>]+src=["\'](.*?)["\']|<script[^>]+src=["\'](.*?)["\']|<link[^>]+href=["\'](.*?)["\']'
     matches = re.findall(pattern, html, re.IGNORECASE)
@@ -38,20 +41,21 @@ def measure_performance(url, source_ip):
     session = requests.Session()
     session.mount('http://', SourceIPAdapter(source_ip))
     session.mount('https://', SourceIPAdapter(source_ip))
+    session.headers.update({'User-Agent': USER_AGENT})
 
     start_rtt = time.time()
     try:
         response = session.get(url, timeout=5)
-        rtt = (time.time() - start_rtt) * 1000  # ms
+        rtt = (time.time() - start_rtt) * 1000
         status_code = response.status_code
         print(f"⚡ Status Code: {status_code}")
-        print(f"🕒 RTT (initial request only): {rtt:.2f} ms")
+        print(f"🕒 RTT (initial request): {rtt:.2f} ms")
     except requests.exceptions.RequestException as e:
-        print(f"💥 Error saat RTT: {e}")
+        print(f"💥 Error waktu RTT: {e}")
         return
 
     links = extract_links(response.text, url)
-    total_size = len(response.content)
+    total_size = len(response.content)  # ukuran HTML utama
 
     start_fetch = time.time()
     with ThreadPoolExecutor(max_workers=10) as executor:
@@ -64,9 +68,9 @@ def measure_performance(url, source_ip):
     throughput = (total_size / 1024) / fetch_time if fetch_time > 0 else 0  # KB/s
     latency = fetch_time * 1000  # ms
 
-    print(f"📦 Total Content Size: {total_size / 1024:.2f} KB")
+    print(f"📦 Total Content Size (HTML + Assets): {total_size / 1024:.2f} KB")
     print(f"🚀 Throughput: {throughput:.2f} KB/s")
-    print(f"⏱️ Latency (full fetch): {latency:.2f} ms")
+    print(f"⏱️ Latency (asset fetch): {latency:.2f} ms")
 
 if __name__ == "__main__":
     url = 'http://testasp.vulnweb.com/'
