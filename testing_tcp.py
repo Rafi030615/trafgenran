@@ -6,7 +6,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urljoin
 import re
 
-# USER-AGENT kayak browser normal, biar gak ditendang ama server
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
 
 class SourceIPAdapter(HTTPAdapter):
@@ -18,7 +17,6 @@ class SourceIPAdapter(HTTPAdapter):
         kwargs['source_address'] = (self.source_address, 0)
         return super(SourceIPAdapter, self).init_poolmanager(*args, **kwargs)
 
-# Ambil semua link <img>, <script>, <link> biar bisa diitung total size-nya
 def extract_links(html, base_url):
     pattern = r'<img[^>]+src=["\'](.*?)["\']|<script[^>]+src=["\'](.*?)["\']|<link[^>]+href=["\'](.*?)["\']'
     matches = re.findall(pattern, html, re.IGNORECASE)
@@ -83,7 +81,6 @@ def measure_multiple_requests(url, source_ip, num_requests=10):
             if result:
                 results.append(result)
 
-    # Ngitung rata-rata
     avg_rtt = sum(r['rtt'] for r in results) / len(results)
     avg_size = sum(r['total_size_kb'] for r in results) / len(results)
     avg_throughput = sum(r['throughput_kbps'] for r in results) / len(results)
